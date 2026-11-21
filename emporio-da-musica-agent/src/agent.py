@@ -41,7 +41,6 @@ IMPORTANT RULES:
 """
 
 
-# Terms that identify accessories or supplies, not instruments.
 ACCESSORY_TERMS = [
     "guitar string", "guitar strings", "strings for guitar",
     "bass strings", "piano strings",
@@ -64,18 +63,12 @@ ACCESSORY_TERMS = [
 
 
 CONTACT_TERMS = [
-    "phone",
-    "phone number",
-    "telephone",
-    "telephone number",
-    "whatsapp",
-    "contact number",
-    "contact phone",
-    "contact details",
-    "store number",
-    "customer service number",
-    "call you",
-    "how can i reach",
+    "phone", "phone number",
+    "telephone", "telephone number",
+    "whatsapp", "contact number",
+    "contact phone", "contact details",
+    "store number", "customer service number",
+    "call you", "how can i reach",
 ]
 
 
@@ -92,20 +85,15 @@ def contains_term(text, terms):
 
 
 def is_accessory_request(message):
-    """Return True when the customer is asking about an accessory."""
     return contains_term(message.lower(), ACCESSORY_TERMS)
 
 
 def is_contact_question(message):
-    """Identify questions asking for store contact information."""
     return contains_term(message.lower(), CONTACT_TERMS)
 
 
 def is_generic_price_question(message):
-    """
-    Detect a price question that names only a broad instrument type.
-    Ask for clarification instead of returning arbitrary products.
-    """
+    """Detect broad price questions that need product clarification."""
     text = message.lower()
 
     price_terms = [
@@ -129,6 +117,8 @@ def is_generic_price_question(message):
         "piano", "pianos", "keyboard", "keyboards",
         "violin", "violins", "ukulele", "ukuleles",
         "drum", "drums", "instrument", "instruments",
+        "acoustic", "classical", "electric",
+        "violão", "violões", "violao", "violoes",
     ]
 
     return contains_term(text, instrument_terms)
@@ -167,15 +157,11 @@ def answer_store_hours():
 
 
 def answer_contact_question():
-    """
-    Check the complete policy document before providing
-    store contact information.
-    """
+    """Verify contact information against the complete policy document."""
     try:
         policy_data = search_policies(
             "What is the store contact phone number?"
         )
-
         phone_audit = policy_data.get("phone_conflicts", {})
 
     except Exception:
@@ -209,10 +195,7 @@ def answer_contact_question():
 
 
 def remove_phone_numbers(text):
-    """
-    Remove Brazilian phone numbers from generated answers
-    when the policy document contains conflicting numbers.
-    """
+    """Remove Brazilian phone numbers from generated answers."""
     phone_pattern = re.compile(
         r"(?<!\d)"
         r"(?:\+?55[\s.-]*)?"
@@ -228,11 +211,7 @@ def remove_phone_numbers(text):
 
 
 def answer_policy_question(user_message):
-    """
-    Retrieve relevant information from the store policy PDF
-    and generate an answer based only on the retrieved content.
-    """
-
+    """Answer using retrieved information from the store policy PDF."""
     try:
         policy_data = search_policies(user_message)
 
@@ -337,8 +316,8 @@ STRICT POLICY RULES:
 
 def deterministic_fallback(message):
     """
-    Identify product and promotion requests that can be answered
-    directly using verified CSV data.
+    Identify product and promotion requests using verified CSV data.
+    Map English instrument descriptions to the store's real categories.
     """
     text = message.lower()
 
@@ -351,14 +330,18 @@ def deterministic_fallback(message):
     if contains_term(text, promotion_words):
         return get_active_promotions()
 
-    # Product search
+    # Product search terms
     product_words = [
-        "guitar", "guitars", "bass", "basses",
+        "guitar", "guitars", "acoustic", "classical",
+        "electric", "nylon", "steel string",
+        "bass", "basses",
         "piano", "pianos", "keyboard", "keyboards",
         "violin", "violins", "ukulele", "ukuleles",
-        "drum", "drums", "fender", "gibson", "ibanez",
-        "taylor", "yamaha", "tagima", "prs", "gretsch",
+        "drum", "drums",
+        "violão", "violões", "violao", "violoes",
         "instrument", "instruments",
+        "fender", "gibson", "ibanez", "taylor",
+        "yamaha", "tagima", "prs", "gretsch",
     ]
 
     if not contains_term(text, product_words):
@@ -366,18 +349,48 @@ def deterministic_fallback(message):
 
     category = None
 
-    if contains_term(text, ["guitar", "guitars"]):
+    # Acoustic and classical guitars are Violões in this catalog.
+    if contains_term(text, [
+        "acoustic guitar", "acoustic guitars",
+        "classical guitar", "classical guitars",
+        "nylon string guitar", "nylon string guitars",
+        "steel string guitar", "steel string guitars",
+        "violão", "violões", "violao", "violoes",
+    ]):
+        category = "Violões"
+
+    # Electric guitars are Guitarras.
+    elif contains_term(text, [
+        "electric guitar", "electric guitars",
+    ]):
         category = "Guitarras"
+
+    # A generic guitar request is ambiguous.
+    elif contains_term(text, ["guitar", "guitars"]):
+        return {"clarification_required": True}
+
     elif contains_term(text, ["bass", "basses"]):
         category = "Baixos"
-    elif contains_term(text, ["piano", "pianos", "keyboard", "keyboards"]):
+
+    elif contains_term(text, [
+        "piano", "pianos", "keyboard", "keyboards",
+    ]):
         category = "Teclados e Pianos"
-    elif contains_term(text, ["violin", "violins"]):
-        category = "Cordas Orquestrais"
+
     elif contains_term(text, ["ukulele", "ukuleles"]):
         category = "Ukuleles"
+
     elif contains_term(text, ["drum", "drums"]):
         category = "Baterias e Percussão"
+
+    elif contains_term(text, ["violin", "violins"]):
+        return {
+            "clarification_required": True,
+            "message": (
+                "Our current catalog does not have a verified "
+                "violin category. Please contact our store for help."
+            ),
+        }
 
     brands = [
         "fender", "gibson", "ibanez", "taylor",
@@ -445,13 +458,9 @@ def chat_with_agent(user_message):
     if contains_term(
         text,
         [
-            "opening hours",
-            "business hours",
-            "store hours",
-            "working hours",
-            "what time do you open",
-            "when do you open",
-            "what time does the store open",
+            "opening hours", "business hours", "store hours",
+            "working hours", "what time do you open",
+            "when do you open", "what time does the store open",
             "when does the store open",
         ],
     ):
@@ -503,15 +512,23 @@ def chat_with_agent(user_message):
             f"Estimated delivery: {result['estimated_delivery']}"
         )
 
-    # 7. Product and promotion queries
+    # 7. Product and promotion requests
     verified_data = deterministic_fallback(user_message)
 
     if verified_data is not None:
 
-        if "products" in verified_data:
-            products = verified_data["products"]
+        if verified_data.get("clarification_required"):
+            return verified_data.get(
+                "message",
+                "Are you looking for an acoustic/classical guitar "
+                "(violão) or an electric guitar? I can search the "
+                "correct category in our catalog.",
+            )
 
-            if not products:
+        if "products" in verified_data:
+            products_found = verified_data["products"]
+
+            if not products_found:
                 return (
                     "I couldn't find any matching products currently "
                     "available in our inventory."
@@ -519,7 +536,7 @@ def chat_with_agent(user_message):
 
             answer = "Here are the available products:\n\n"
 
-            for product in products:
+            for product in products_found:
                 answer += (
                     f"Product: {product['name']}\n"
                     f"Price: R$ {product['price_brl']:,.2f}\n"
@@ -529,14 +546,14 @@ def chat_with_agent(user_message):
             return answer
 
         if "promotions" in verified_data:
-            promotions = verified_data["promotions"]
+            promotions_found = verified_data["promotions"]
 
-            if not promotions:
+            if not promotions_found:
                 return "There are currently no active promotions."
 
             answer = "Here are our current promotions:\n\n"
 
-            for promotion in promotions:
+            for promotion in promotions_found:
                 answer += (
                     f"Product: {promotion['product_name']}\n"
                     f"Original price: R$ "

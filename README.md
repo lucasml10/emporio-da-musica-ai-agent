@@ -1,87 +1,83 @@
 
 # 🎵 Empório da Música — AI Customer Service Agent
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
 ![Ollama](https://img.shields.io/badge/LLM-Ollama-black?logo=ollama)
 ![Qwen](https://img.shields.io/badge/Model-Qwen%202.5%203B-purple)
-![Tests](https://img.shields.io/badge/Tests-21%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/Tests-21%20Passing-success)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-An AI-powered customer service agent developed in Python for a fictional musical instruments store in Campo Grande, Brazil.
+An AI-powered customer service assistant developed in Python, using a locally running Large Language Model (LLM) to automate customer interactions for a musical instrument store.
 
-The application processes customer messages in natural language and retrieves information from structured datasets, store policy documents, and a locally hosted language model.
+The application combines natural language processing, structured business data, product search, order verification and policy document retrieval.
 
-The project combines deterministic business logic, document retrieval, and Large Language Model (LLM) capabilities to deliver controlled and context-aware customer interactions.
+## 📸 System Preview
 
-## 🚀 Key Features
+![Empório da Música AI Agent - System Startup](screenshots/01-system-startup.png)
 
-- **Product Search:** Search musical instruments by name, category, and price.
-- **Product Information:** Retrieve product descriptions, specifications, prices, and stock availability.
-- **Promotions:** Identify and display promotional offers using structured CSV data.
-- **Order Tracking:** Verify order status using an order ID and registered customer email.
-- **Policy Retrieval:** Search store policies covering business hours, payments, exchanges, returns, shipping, and warranties.
-- **Request Classification:** Route customer requests to the appropriate application functionality.
-- **Contact Information Validation:** Detect conflicting phone numbers in the policy document.
-- **Information Reliability:** Avoid presenting conflicting contact information as verified.
-- **Scope Control:** Handle requests involving products and services outside the store's scope.
-- **Local AI Integration:** Use Qwen 2.5 3B through Ollama for general conversational responses.
-- **Automated Testing:** Validate application behavior, privacy requirements, error handling, and contact information safeguards.
+*The application loading its datasets and initializing the AI customer service assistant.*
 
-## 🧰 Technology Stack
+## 🚀 Features
+
+- **AI Customer Service:** Natural language interactions powered by Qwen 2.5 3B.
+- **Product Search:** Search musical instruments using structured CSV datasets.
+- **Category Recognition:** Distinguishes acoustic guitars, electric guitars, basses, keyboards, ukuleles and drums.
+- **Promotions:** Retrieves active promotions and product discounts.
+- **Order Tracking:** Verifies order information using the order ID and registered customer email.
+- **Policy Retrieval:** Searches the store's PDF policy document.
+- **Business Hours:** Provides official store opening hours.
+- **Contact Validation:** Detects conflicting contact information instead of providing unverified phone numbers.
+- **Privacy Protection:** Avoids exposing unnecessary customer information.
+- **Automated Testing:** Includes 21 unit tests covering important application behaviors.
+
+## 🛠️ Technologies
 
 | Technology | Purpose |
 |---|---|
-| Python | Application logic and business rules |
+| Python | Main programming language |
 | Ollama | Local LLM execution |
-| Qwen 2.5 3B | Natural language generation |
-| Pandas | Structured CSV data processing |
-| PyMuPDF | PDF text extraction |
+| Qwen 2.5 3B | Natural language understanding and generation |
+| Pandas | Dataset processing and manipulation |
+| PyMuPDF | PDF policy document extraction |
+| CSV | Structured business data storage |
 | Unittest | Automated testing |
-| Git & GitHub | Version control and project management |
+| Git & GitHub | Version control and project hosting |
 
-## 🏗️ System Architecture
-
-The application follows a hybrid architecture combining deterministic request routing, structured data retrieval, document-based policy search, and LLM-generated responses.
+## 🧠 Architecture
 
 ```mermaid
 flowchart TD
-    A["Customer Message"] --> B["Python AI Agent"]
-    B --> C{"Request Classification"}
+    A[Customer] --> B[Python Customer Service Agent]
+    B --> C{Request Classification}
 
-    C -->|"Products / Stock"| D["CSV Data Retrieval"]
-    C -->|"Promotions"| E["Promotion Search"]
-    C -->|"Order Tracking"| F["Order Verification"]
-    C -->|"Store Contact"| G["Contact Validation"]
-    C -->|"Store Policies"| H["PDF Policy Search"]
-    C -->|"General Questions"| I["Ollama / Qwen 2.5 3B"]
+    C --> D[Product Search]
+    C --> E[Promotions]
+    C --> F[Order Verification]
+    C --> G[Policy Retrieval]
+    C --> H[Contact Validation]
+    C --> I[General Questions]
 
-    G --> J["Conflict Detection"]
-    H --> K["Policy Response Generation"]
-    D --> L["Customer Response"]
-    E --> L
-    F --> L
-    J --> L
-    K --> L
-    I --> L
+    D --> J[(CSV Datasets)]
+    E --> J
+    F --> J
+    G --> K[(Store Policies PDF)]
+    H --> K
+    I --> L[Ollama - Qwen 2.5 3B]
 
-    L --> M["Customer"]
+    J --> M[Verified Response]
+    K --> M
+    L --> M
+
+    M --> N[Customer Response]
 ```
 
-### Architecture Components
-
-1. **Request Routing:** Identifies the type of customer request and directs it to the appropriate Python functionality.
-2. **Structured Data Retrieval:** Uses Pandas to process product, inventory, promotion, and order datasets.
-3. **Policy Retrieval:** Extracts and searches relevant content from the store policy PDF using keyword-based matching.
-4. **Contact Validation:** Audits phone numbers found throughout the policy document and identifies conflicting contact information.
-5. **LLM Integration:** Sends general conversational requests to the locally running Qwen model through Ollama.
-6. **Response Handling:** Returns customer-facing responses based on retrieved information or LLM generation.
-
-**Design principle:** Business-critical information is retrieved through explicit Python logic rather than relying exclusively on model-generated answers.
-
-## 📁 Project Structure
+## 📂 Project Structure
 
 ```text
 emporio-da-musica-ai-agent/
+│
+├── screenshots/
+│   └── 01-system-startup.png
 │
 ├── emporio-da-musica-agent/
 │   │
@@ -115,152 +111,158 @@ emporio-da-musica-ai-agent/
 └── README.md
 ```
 
-## ⚙️ Installation and Setup
+## ⚙️ Installation
 
 ### Prerequisites
 
-- Python 3.10 or newer
-- [Ollama](https://ollama.com/) installed
-- Qwen 2.5 3B model
+- Python 3.10 or higher
+- Ollama
+- Git
 
 ### 1. Clone the repository
 
 ```bash
 git clone https://github.com/lucasml10/emporio-da-musica-ai-agent.git
-cd emporio-da-musica-ai-agent/emporio-da-musica-agent
+
+cd emporio-da-musica-ai-agent
 ```
 
-### 2. Create a virtual environment
+### 2. Install Ollama
 
-```bash
-python3 -m venv .venv
-```
+Download and install Ollama:
 
-**macOS / Linux:**
+https://ollama.com/download
 
-```bash
-source .venv/bin/activate
-```
-
-**Windows PowerShell:**
-
-```powershell
-.venv\Scripts\Activate.ps1
-```
-
-### 3. Install dependencies
-
-```bash
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-```
-
-### 4. Download the language model
+### 3. Download the AI model
 
 ```bash
 ollama pull qwen2.5:3b
 ```
 
-Make sure the Ollama service is running before starting the application.
+### 4. Navigate to the application directory
+
+```bash
+cd emporio-da-musica-agent
+```
+
+### 5. Create a virtual environment
+
+```bash
+python3 -m venv .venv
+```
+
+Activate it on macOS or Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+On Windows:
+
+```bash
+.venv\Scripts\activate
+```
+
+### 6. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
 
 ## ▶️ Running the Application
 
-Start the interactive customer service agent:
+Make sure Ollama is running and the Qwen model is available.
+
+From the `emporio-da-musica-agent` directory, execute:
 
 ```bash
 python main.py
 ```
 
-The application opens an interactive terminal session where customers can submit questions.
+The application will load the datasets and initialize the customer service assistant.
 
-To close the application, type:
+Example:
 
 ```text
-exit
+EMPORIO DA MUSICA - AI CUSTOMER SERVICE
+
+Assistant is ready!
+Type 'exit' to close the application.
+
+Customer: What are your store opening hours?
+
+Assistant:
+Our official store opening hours are:
+
+- Monday to Friday: 09:00 AM to 06:00 PM
+- Saturday: 09:00 AM to 01:00 PM
+- Sundays and holidays: Closed
 ```
 
-## 🧪 Automated Testing
+## 🧪 Automated Tests
 
-Run the automated test suite:
+The project includes 21 automated unit tests.
+
+Run the test suite:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-The current test suite contains **21 automated tests** covering:
+The tests cover:
 
-- Accessory request detection and handling.
-- Product-related request classification.
-- Generic and brand-specific price questions.
-- Policy question identification.
+- Product accessory restrictions.
+- Product request classification.
+- Generic price questions.
+- Store contact validation.
+- Conflicting phone number detection.
+- Policy retrieval.
 - Order verification requirements.
-- Customer data privacy and order response handling.
-- Contact information detection.
-- Conflicting phone number identification.
-- Contact information validation.
-- PDF access error handling.
-- LLM routing and connection error handling.
-- Input validation and edge cases.
+- Customer data protection.
+- LLM connection error handling.
+- Input validation.
+- General AI response generation.
 
-All 21 tests passed in the latest local test execution.
+**Latest validation: 21 tests passed.**
 
-## 🔐 Data Privacy and Reliability
+## 🔒 Data Privacy and Reliability
 
-Data privacy and information reliability are important considerations in this project.
+The application implements several safeguards:
 
-- The public repository uses `customers_public.csv`, containing anonymized customer records for demonstration purposes.
-- The original `customers.csv` file is excluded through `.gitignore`.
-- Order verification requires an order ID and registered customer email.
+- Order verification requires an order ID and registered email.
 - Unnecessary customer information is not included in order responses.
-- Contact information is checked against the complete policy document.
-- Conflicting phone numbers are not presented as verified contact information.
-- The datasets are static demonstration fixtures and do not represent a live store database.
+- Contact information is checked against the policy document.
+- Conflicting phone numbers are not presented as verified information.
+- Product availability and prices are retrieved from structured datasets.
+- Policy answers are grounded in the store's PDF documentation.
 
-## ⚠️ Current Limitations
+## ⚠️ Current Scope and Limitations
 
-- Product, inventory, order, and promotion information relies on static CSV datasets.
-- Policy retrieval uses keyword-based matching rather than semantic vector search.
-- Contact conflict detection identifies distinct phone numbers in the document but does not establish which number is officially correct.
-- General conversational responses depend on the locally running Qwen model.
-- The interface is currently command-line based.
-- There are no integrations with real payment, inventory, or shipping providers.
-- Ambiguous policy cases may require human review.
+- The application currently runs as a command-line interface.
+- The language model runs locally through Ollama.
+- Product and customer information depends on the supplied datasets.
+- The application uses simulated business datasets for demonstration and development.
+- It does not currently integrate with a live e-commerce platform or external order management system.
 
 ## 🔮 Future Improvements
 
-- Implement semantic document retrieval using embeddings and a vector database.
 - Develop a web-based customer service interface.
-- Integrate a persistent database.
-- Improve automated intent classification.
-- Add conversation history and session management.
-- Implement human handoff for complex customer requests.
-- Expand automated and integration testing.
-- Improve policy conflict detection and document validation.
+- Integrate a database for persistent business data.
+- Add a REST API using FastAPI.
+- Implement conversation history and customer context.
+- Improve multilingual support.
+- Integrate with external inventory and order management systems.
 
-## 👨‍💻 Development Approach
-
-This project was developed as part of a technical challenge for an AI Engineer role.
-
-AI-assisted development tools were used during implementation, debugging, and documentation. Architecture decisions, code integration, and testing were reviewed throughout development.
-
-The project demonstrates practical knowledge of:
-
-- Python application development.
-- Object-oriented programming and business logic.
-- Structured data processing.
-- Local Large Language Model integration.
-- Document extraction and retrieval.
-- Information validation and error handling.
-- Automated software testing.
-- Version control and project documentation.
-
----
-
-## 👤 Author
+## 👨‍💻 Author
 
 **Lucas Pereira de Melo Barbosa**
 
-- GitHub: [@lucasml10](https://github.com/lucasml10)
-- Project Repository: [Empório da Música AI Agent](https://github.com/lucasml10/emporio-da-musica-ai-agent)
+ADS Student | Python | Artificial Intelligence | Cybersecurity | IT Infrastructure
+
+GitHub: https://github.com/lucasml10
+
+LinkedIn: https://www.linkedin.com/in/lucasmelo-dev-ads
+
+---
 
 **Technologies:** Python · Ollama · Qwen 2.5 · Pandas · PyMuPDF · Git · GitHub
