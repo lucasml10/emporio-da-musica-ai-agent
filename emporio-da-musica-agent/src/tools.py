@@ -178,8 +178,7 @@ def get_order_status(order_id, customer_email):
         "tracking_code": clean_value(order_row["tracking_code"]),
         "estimated_delivery": clean_value(
             order_row["estimated_delivery"]
-        ),
-        "notes": clean_value(order_row["notes"])
+        )
     }
 
 

@@ -5,13 +5,13 @@ import unicodedata
 import pymupdf
 
 
-# Caminho do PDF com as políticas da loja
+# Path to the store policy PDF
 BASE_DIR = Path(__file__).resolve().parent.parent
 PDF_PATH = BASE_DIR / "data" / "store_policies.pdf"
 
 
 def normalize_text(text):
-    """Remove acentos e padroniza o texto para facilitar a busca."""
+    """Remove accents and normalize text for searching."""
     text = unicodedata.normalize("NFKD", text)
     text = "".join(
         char for char in text
@@ -21,7 +21,7 @@ def normalize_text(text):
 
 
 def load_policy_pages():
-    """Extrai o texto de cada página do PDF."""
+    """Extract text from every page of the policy PDF."""
     if not PDF_PATH.exists():
         raise FileNotFoundError(
             f"Policy PDF not found: {PDF_PATH}"
@@ -47,7 +47,54 @@ def load_policy_pages():
     return pages
 
 
-# Expansão de termos para ajudar a encontrar políticas relevantes.
+def find_phone_numbers(pages):
+    """
+    Extract Brazilian phone numbers containing an area code.
+    Returns unique numbers with their original formatting.
+    """
+    phone_pattern = re.compile(
+        r"(?<!\d)"
+        r"(?:\+?55[\s.-]*)?"
+        r"\(?\d{2}\)?[\s.-]*"
+        r"(?:9\d{4}|\d{4})[\s.-]?\d{4}"
+        r"(?!\d)"
+    )
+
+    phones = {}
+
+    for page in pages:
+        content = page["content"]
+
+        for match in phone_pattern.finditer(content):
+            original_number = match.group(0).strip()
+            digits = re.sub(r"\D", "", original_number)
+
+            # Remove Brazil country code for comparison.
+            if digits.startswith("55") and len(digits) in (12, 13):
+                digits = digits[2:]
+
+            if len(digits) not in (10, 11):
+                continue
+
+            phones[digits] = original_number
+
+    return list(phones.values())
+
+
+def detect_phone_conflicts(pages):
+    """
+    Detect whether the policy document contains multiple
+    distinct phone numbers.
+    """
+    phone_numbers = find_phone_numbers(pages)
+
+    return {
+        "has_conflict": len(phone_numbers) > 1,
+        "numbers": phone_numbers
+    }
+
+
+# Keyword expansion for policy retrieval.
 KEYWORD_GROUPS = {
     "hours": [
         "hours", "opening", "closing", "open", "closed",
@@ -89,7 +136,7 @@ KEYWORD_GROUPS = {
 
 
 def expand_keywords(question):
-    """Identifica assuntos relacionados à pergunta."""
+    """Identify related terms based on the question."""
     normalized_question = normalize_text(question)
     keywords = set(normalized_question.split())
 
@@ -106,11 +153,14 @@ def expand_keywords(question):
 
 def search_policies(question, top_k=3):
     """
-    Busca as páginas mais relevantes do documento de políticas.
-    Retorna o conteúdo encontrado para o agente utilizar.
+    Retrieve the most relevant policy pages.
+    Also reports phone number conflicts found in the document.
     """
     pages = load_policy_pages()
     keywords = expand_keywords(question)
+
+    # Check the entire document for conflicting phone numbers.
+    phone_conflicts = detect_phone_conflicts(pages)
 
     scored_pages = []
 
@@ -149,12 +199,14 @@ def search_policies(question, top_k=3):
                 "store policy document. Ask store management "
                 "before providing a definitive answer."
             ),
-            "results": []
+            "results": [],
+            "phone_conflicts": phone_conflicts
         }
 
     return {
         "found": True,
-        "results": results
+        "results": results,
+        "phone_conflicts": phone_conflicts
     }
 
 
@@ -163,9 +215,7 @@ if __name__ == "__main__":
     print("EMPORIO DA MUSICA - POLICY SEARCH TEST")
     print("=" * 50)
 
-    question = input(
-        "\nEnter a policy question: "
-    )
+    question = input("\nEnter a policy question: ")
 
     result = search_policies(question)
 
@@ -176,3 +226,15 @@ if __name__ == "__main__":
     else:
         print("\nNo relevant policy found.")
         print(result["message"])
+
+    conflicts = result["phone_conflicts"]
+
+    print("\n--- PHONE NUMBER AUDIT ---")
+
+    if conflicts["has_conflict"]:
+        print("Conflicting phone numbers detected:")
+
+        for number in conflicts["numbers"]:
+            print(f"- {number}")
+    else:
+        print("No conflicting phone numbers detected.")
