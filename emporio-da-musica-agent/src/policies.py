@@ -2,7 +2,7 @@
 from pathlib import Path
 import re
 import unicodedata
-import fitz
+import pymupdf
 
 
 # Caminho do PDF com as políticas da loja
@@ -29,7 +29,7 @@ def load_policy_pages():
 
     pages = []
 
-    with fitz.open(PDF_PATH) as pdf:
+    with pymupdf.open(PDF_PATH) as pdf:
         for page_number, page in enumerate(pdf, start=1):
             content = page.get_text("text").strip()
 
